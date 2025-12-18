@@ -1,0 +1,39 @@
+:root { --bg:#0b0b0c; --card:#141416; --txt:#f2f2f2; --mut:#b9b9b9; --line:#2a2a2e; }
+*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+body{margin:0;background:var(--bg);color:var(--txt);}
+.top{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:18px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,11,12,.95);backdrop-filter:blur(8px);}
+h1{margin:0;font-size:20px;}
+.sub{margin:3px 0 0;color:var(--mut);font-size:12px;}
+.pill{font-size:12px;border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--mut);}
+.wrap{max-width:980px;margin:0 auto;padding:14px 12px;display:grid;gap:12px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;}
+h2{margin:0 0 12px;font-size:16px;}
+.grid{display:grid;gap:10px;grid-template-columns:1fr 1fr;}
+label{display:flex;flex-direction:column;gap:6px;color:var(--mut);font-size:12px;}
+input{background:#0f0f11;border:1px solid var(--line);color:var(--txt);padding:12px;border-radius:10px;font-size:14px;outline:none;}
+input:focus{border-color:#4a4a55;}
+.span2{grid-column:1 / span 2;}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+button{border:1px solid var(--line);background:#1b1b1f;color:var(--txt);padding:10px 12px;border-radius:10px;font-size:14px;cursor:pointer;}
+button.secondary{background:transparent;color:var(--mut);}
+button.danger{border-color:#5a2b2b;background:#2a1515;}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+.filters{margin:8px 0 0;}
+.tableWrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:10px;}
+table{width:100%;border-collapse:collapse;min-width:760px;}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;}
+th{color:var(--mut);font-weight:600;background:#101012;position:sticky;top:0;}
+td small{color:var(--mut);}
+.hint{color:var(--mut);font-size:12px;margin-top:10px;}
+.iconBtn{background:transparent;border:1px solid var(--line);padding:6px 10px;border-radius:10px;color:var(--mut);cursor:pointer;}
+@media (max-width:560px){
+  .grid{grid-template-columns:1fr;}
+  .span2{grid-column:auto;}
+  table{min-width:680px;}
+}
+@media print{
+  body{background:#fff;color:#000;}
+  .top, .actions, .filters, .hint {display:none !important;}
+  .card{border:none;}
+  table{min-width:0;}
+}
