@@ -10,6 +10,7 @@ h1{margin:0;font-size:20px;}
 h2{margin:0 0 12px;font-size:16px;}
 .grid{display:grid;gap:10px;grid-template-columns:1fr 1fr;}
 label{display:flex;flex-direction:column;gap:6px;color:var(--mut);font-size:12px;}
+small.muted{color:var(--mut);opacity:.9}
 input{background:#0f0f11;border:1px solid var(--line);color:var(--txt);padding:12px;border-radius:10px;font-size:14px;outline:none;}
 input:focus{border-color:#4a4a55;}
 .span2{grid-column:1 / span 2;}
@@ -23,7 +24,6 @@ button.danger{border-color:#5a2b2b;background:#2a1515;}
 table{width:100%;border-collapse:collapse;min-width:760px;}
 th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;}
 th{color:var(--mut);font-weight:600;background:#101012;position:sticky;top:0;}
-td small{color:var(--mut);}
 .hint{color:var(--mut);font-size:12px;margin-top:10px;}
 .iconBtn{background:transparent;border:1px solid var(--line);padding:6px 10px;border-radius:10px;color:var(--mut);cursor:pointer;}
 @media (max-width:560px){
