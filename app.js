@@ -1,4 +1,4 @@
-const STORAGE_KEY = "clientArchive.v1";
+const STORAGE_KEY = "clientArchive.v2";
 
 const el = (id) => document.getElementById(id);
 
@@ -10,6 +10,10 @@ const regInput   = el("reg");
 
 const saveBtn  = el("saveBtn");
 const clearBtn = el("clearBtn");
+const cancelEditBtn = el("cancelEditBtn");
+const formTitle = el("formTitle");
+const editHint = el("editHint");
+
 const tbody    = el("tbody");
 const search   = el("search");
 
@@ -28,60 +32,74 @@ const printOneBtn = el("printOneBtn");
 
 let state = loadData();
 let currentPrintItem = null;
+let editingId = null;
 
-function nowISO() {
-  return new Date().toISOString();
-}
+function nowISO(){ return new Date().toISOString(); }
 
-function formatDate(iso) {
+function formatDate(iso){
   const d = new Date(iso);
   const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function formatPrice(v) {
+function formatPrice(v){
   const n = Number(v || 0);
   return n.toFixed(2);
 }
 
-function escapeHtml(s) {
+function escapeHtml(s){
   return String(s ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
-function telHref(phone) {
+function telHref(phone){
   const raw = String(phone || "").trim();
-  const cleaned = raw.replace(/[^\d+]/g, "");
-  return cleaned;
+  return raw.replace(/[^\d+]/g,"");
 }
 
-function normalize(s) {
+function normalize(s){
   return String(s ?? "").toLowerCase().trim();
 }
 
-function loadData() {
-  try {
+function cryptoId(){
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  return "id-" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+function loadData(){
+  try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if(!raw) return [];
     const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return [];
-    return arr;
-  } catch {
+    return Array.isArray(arr) ? arr : [];
+  }catch{
     return [];
   }
 }
 
-function saveData() {
+function saveData(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function clearForm() {
+function validateRegIreland(reg){
+  const r = String(reg || "").trim().toUpperCase();
+  if(!r) return true;
+  return /^[0-9]{1,3}\s*-\s*[A-Z]{1,2}\s*-\s*[0-9]{1,6}$/.test(r);
+}
+
+function clearForm(){
+  editingId = null;
+  formTitle.textContent = "Add client";
+  saveBtn.textContent = "Save client";
+  cancelEditBtn.classList.add("hidden");
+  editHint.classList.add("hidden");
+
   nameInput.value = "";
   phoneInput.value = "";
   priceInput.value = "";
@@ -90,24 +108,53 @@ function clearForm() {
   nameInput.focus();
 }
 
-function validateRegIreland(reg) {
-  const r = String(reg || "").trim().toUpperCase();
-  if (!r) return true;
-  return /^[0-9]{1,3}\s*-\s*[A-Z]{1,2}\s*-\s*[0-9]{1,6}$/.test(r);
+function startEdit(item){
+  editingId = item.id;
+  formTitle.textContent = "Edit client";
+  saveBtn.textContent = "Update";
+  cancelEditBtn.classList.remove("hidden");
+  editHint.classList.remove("hidden");
+
+  nameInput.value = item.name || "";
+  phoneInput.value = item.phone || "";
+  priceInput.value = String(Number(item.price || 0).toFixed(2));
+  carInput.value = item.car || "";
+  regInput.value = (item.reg || "").toUpperCase();
+  nameInput.focus();
 }
 
-function addClient() {
+function addOrUpdateClient(){
   const name = nameInput.value.trim();
   const phone = phoneInput.value.trim();
   const price = priceInput.value.trim();
   const car = carInput.value.trim();
   const reg = regInput.value.trim().toUpperCase();
 
-  if (!name) { alert("Please enter client name."); nameInput.focus(); return; }
-  if (!phone) { alert("Please enter phone number."); phoneInput.focus(); return; }
-  if (reg && !validateRegIreland(reg)) {
+  if(!name){ alert("Please enter client name."); nameInput.focus(); return; }
+  if(!phone){ alert("Please enter phone number."); phoneInput.focus(); return; }
+  if(reg && !validateRegIreland(reg)){
     alert("Registration format looks wrong. Example: 231-D-12345");
     regInput.focus();
+    return;
+  }
+
+  if(editingId){
+    const idx = state.findIndex(x => x.id === editingId);
+    if(idx === -1){ clearForm(); return; }
+
+    state[idx] = {
+      ...state[idx],
+      name,
+      phone,
+      price: price ? Number(price) : 0,
+      car,
+      reg,
+      updatedAt: nowISO()
+    };
+
+    saveData();
+    render();
+    clearForm();
     return;
   }
 
@@ -127,32 +174,24 @@ function addClient() {
   clearForm();
 }
 
-function cryptoId() {
-  if (crypto?.randomUUID) return crypto.randomUUID();
-  return "id-" + Math.random().toString(16).slice(2) + Date.now().toString(16);
-}
-
-function removeClient(id) {
+function removeClient(id){
   const ok = confirm("Delete this client record?");
-  if (!ok) return;
+  if(!ok) return;
   state = state.filter(x => x.id !== id);
   saveData();
   render();
+  if(editingId === id) clearForm();
 }
 
-function matchesSearch(item, q) {
-  if (!q) return true;
+function matchesSearch(item, q){
+  if(!q) return true;
   const hay = [
-    item.name,
-    item.phone,
-    item.car,
-    item.reg,
-    String(item.price ?? "")
+    item.name, item.phone, item.car, item.reg, String(item.price ?? "")
   ].map(normalize).join(" | ");
   return hay.includes(q);
 }
 
-function render() {
+function render(){
   const q = normalize(search.value);
   const rows = state.filter(item => matchesSearch(item, q));
 
@@ -163,15 +202,16 @@ function render() {
 
     return `
       <tr>
-        <td>${escapeHtml(dateText)}</td>
-        <td>${escapeHtml(item.name)}</td>
-        <td><a class="tel" href="tel:${escapeHtml(phoneLink)}">${phoneSafe}</a></td>
-        <td>€${escapeHtml(formatPrice(item.price))}</td>
-        <td>${escapeHtml(item.car || "")}</td>
-        <td>${escapeHtml(item.reg || "")}</td>
-        <td>
-          <button class="btn-sm" data-action="pdf" data-id="${escapeHtml(item.id)}">Print / PDF</button>
+        <td class="colDate">${escapeHtml(dateText)}</td>
+        <td class="colName">${escapeHtml(item.name)}</td>
+        <td class="colPhone"><a class="tel" href="tel:${escapeHtml(phoneLink)}">${phoneSafe}</a></td>
+        <td class="colPrice">€${escapeHtml(formatPrice(item.price))}</td>
+        <td class="colCar">${escapeHtml(item.car || "")}</td>
+        <td class="colReg">${escapeHtml(item.reg || "")}</td>
+        <td class="colActions">
+          <button class="btn-sm" data-action="edit" data-id="${escapeHtml(item.id)}">Edit</button>
           <button class="btn-sm danger" data-action="delete" data-id="${escapeHtml(item.id)}">Delete</button>
+          <button class="btn-sm" data-action="pdf" data-id="${escapeHtml(item.id)}">PDF</button>
         </td>
       </tr>
     `;
@@ -180,14 +220,14 @@ function render() {
   updateStatus();
 }
 
-function updateStatus() {
+function updateStatus(){
   const online = navigator.onLine;
   statusDot.style.background = online ? "var(--ok)" : "var(--bad)";
   statusText.textContent = online ? "Ready" : "Offline";
 }
 
 /* PRINT (single) */
-function openPrintModal(item) {
+function openPrintModal(item){
   currentPrintItem = item;
 
   printCard.innerHTML = `
@@ -205,15 +245,15 @@ function openPrintModal(item) {
   printModal.setAttribute("aria-hidden", "false");
 }
 
-function closePrintModal() {
+function closePrintModal(){
   currentPrintItem = null;
   printModal.classList.remove("show");
   printModal.setAttribute("aria-hidden", "true");
 }
 
-function printItem(item) {
+function printItem(item){
   const existing = document.getElementById("printOnly");
-  if (existing) existing.remove();
+  if(existing) existing.remove();
 
   const div = document.createElement("div");
   div.id = "printOnly";
@@ -237,9 +277,9 @@ function printItem(item) {
   window.print();
 }
 
-function printAll() {
+function printAll(){
   const existing = document.getElementById("printOnly");
-  if (existing) existing.remove();
+  if(existing) existing.remove();
 
   const div = document.createElement("div");
   div.id = "printOnly";
@@ -270,7 +310,7 @@ function printAll() {
 }
 
 /* EXPORT / IMPORT */
-function downloadFile(filename, content, mime) {
+function downloadFile(filename, content, mime){
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -282,12 +322,17 @@ function downloadFile(filename, content, mime) {
   URL.revokeObjectURL(url);
 }
 
-function exportJSON() {
-  const content = JSON.stringify(state, null, 2);
-  downloadFile(`client-archive-${Date.now()}.json`, content, "application/json");
+function exportJSON(){
+  downloadFile(`client-archive-${Date.now()}.json`, JSON.stringify(state, null, 2), "application/json");
 }
 
-function exportCSV() {
+function csvCell(v){
+  const s = String(v ?? "");
+  if (/[",\n]/.test(s)) return `"${s.replaceAll('"','""')}"`;
+  return s;
+}
+
+function exportCSV(){
   const header = ["createdAt","name","phone","price","car","reg"];
   const lines = [
     header.join(","),
@@ -303,47 +348,34 @@ function exportCSV() {
   downloadFile(`client-archive-${Date.now()}.csv`, lines.join("\n"), "text/csv");
 }
 
-function csvCell(v){
-  const s = String(v ?? "");
-  if (/[",\n]/.test(s)) return `"${s.replaceAll('"','""')}"`;
-  return s;
-}
-
-async function importData(file) {
-  if (!file) return;
-
+async function importData(file){
+  if(!file) return;
   const text = await file.text();
   const name = (file.name || "").toLowerCase();
 
-  try {
-    if (name.endsWith(".json")) {
+  try{
+    if(name.endsWith(".json")){
       const arr = JSON.parse(text);
-      if (!Array.isArray(arr)) throw new Error("Invalid JSON");
+      if(!Array.isArray(arr)) throw new Error("Invalid JSON");
       const cleaned = arr.map(normalizeRecord).filter(Boolean);
       state = mergeRecords(state, cleaned);
-      saveData();
-      render();
-      alert("Imported JSON ✅");
-      return;
+      saveData(); render(); alert("Imported JSON ✅"); return;
     }
 
-    if (name.endsWith(".csv")) {
+    if(name.endsWith(".csv")){
       const cleaned = parseCSV(text).map(normalizeRecord).filter(Boolean);
       state = mergeRecords(state, cleaned);
-      saveData();
-      render();
-      alert("Imported CSV ✅");
-      return;
+      saveData(); render(); alert("Imported CSV ✅"); return;
     }
 
     alert("Unsupported file. Use .json or .csv");
-  } catch {
+  }catch{
     alert("Import failed.");
   }
 }
 
-function normalizeRecord(r) {
-  if (!r) return null;
+function normalizeRecord(r){
+  if(!r) return null;
 
   const createdAt = r.createdAt || r.date || r.CreatedAt || r.Date || nowISO();
   const name = (r.name || r.Name || "").toString().trim();
@@ -352,7 +384,7 @@ function normalizeRecord(r) {
   const car = (r.car || r.Car || r.make || r.Make || "").toString().trim();
   const reg = (r.reg || r.Reg || r.registration || r.Registration || "").toString().trim().toUpperCase();
 
-  if (!name || !phone) return null;
+  if(!name || !phone) return null;
 
   return {
     id: r.id || cryptoId(),
@@ -365,20 +397,19 @@ function normalizeRecord(r) {
   };
 }
 
-function mergeRecords(oldArr, newArr) {
+function mergeRecords(oldArr, newArr){
   const map = new Map();
-  for (const x of oldArr) map.set(x.id, x);
-  for (const x of newArr) map.set(x.id, x);
+  for(const x of oldArr) map.set(x.id, x);
+  for(const x of newArr) map.set(x.id, x);
   return Array.from(map.values()).sort((a,b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
 }
 
-function parseCSV(text) {
+function parseCSV(text){
   const lines = text.split(/\r?\n/).filter(l => l.trim().length);
-  if (!lines.length) return [];
+  if(!lines.length) return [];
   const header = splitCsvLine(lines[0]).map(h => h.trim());
   const out = [];
-
-  for (let i=1; i<lines.length; i++) {
+  for(let i=1;i<lines.length;i++){
     const cols = splitCsvLine(lines[i]);
     const obj = {};
     header.forEach((h, idx) => obj[h] = cols[idx] ?? "");
@@ -387,20 +418,18 @@ function parseCSV(text) {
   return out;
 }
 
-function splitCsvLine(line) {
+function splitCsvLine(line){
   const res = [];
   let cur = "";
   let inQ = false;
-
-  for (let i=0; i<line.length; i++) {
+  for(let i=0;i<line.length;i++){
     const ch = line[i];
-    if (ch === '"') {
-      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+    if(ch === '"'){
+      if(inQ && line[i+1] === '"'){ cur += '"'; i++; }
       else inQ = !inQ;
-    } else if (ch === "," && !inQ) {
-      res.push(cur);
-      cur = "";
-    } else {
+    }else if(ch === "," && !inQ){
+      res.push(cur); cur = "";
+    }else{
       cur += ch;
     }
   }
@@ -409,28 +438,28 @@ function splitCsvLine(line) {
 }
 
 /* EVENTS */
-saveBtn.addEventListener("click", addClient);
+saveBtn.addEventListener("click", addOrUpdateClient);
 clearBtn.addEventListener("click", clearForm);
+cancelEditBtn.addEventListener("click", clearForm);
 search.addEventListener("input", render);
 
 tbody.addEventListener("click", (e) => {
   const btn = e.target.closest("button");
-  if (!btn) return;
+  if(!btn) return;
   const id = btn.getAttribute("data-id");
   const action = btn.getAttribute("data-action");
   const item = state.find(x => x.id === id);
-  if (!item) return;
+  if(!item) return;
 
-  if (action === "delete") removeClient(id);
-  if (action === "pdf") openPrintModal(item);
+  if(action === "delete") removeClient(id);
+  if(action === "edit") startEdit(item);
+  if(action === "pdf") openPrintModal(item);
 });
 
 closeModalBtn.addEventListener("click", closePrintModal);
-printModal.addEventListener("click", (e) => {
-  if (e.target === printModal) closePrintModal();
-});
+printModal.addEventListener("click", (e) => { if(e.target === printModal) closePrintModal(); });
 printOneBtn.addEventListener("click", () => {
-  if (!currentPrintItem) return;
+  if(!currentPrintItem) return;
   closePrintModal();
   printItem(currentPrintItem);
 });
