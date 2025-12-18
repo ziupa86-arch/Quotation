@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="pl">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Archiwum Klientów</title>
+  <title>Client Archive</title>
 
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#111111" />
@@ -13,87 +13,82 @@
 <body>
   <header class="top">
     <div>
-      <h1>Archiwum Klientów</h1>
-      <p class="sub">Offline • Szukaj • Archiwizuj • PDF</p>
+      <h1>Client Archive</h1>
+      <p class="sub">Offline • Search • Export • Print/PDF</p>
     </div>
     <div class="pill" id="status">Ready</div>
   </header>
 
   <main class="wrap">
+    <!-- ADD CLIENT -->
     <section class="card">
-      <h2>Dodaj klienta</h2>
+      <h2>Add client</h2>
 
       <form id="form">
         <div class="grid">
           <label>
-            Nazwa klienta
+            Client name
             <input id="name" type="text" autocomplete="off" required />
           </label>
 
           <label>
-            Numer telefonu
-            <input id="phone" type="tel" inputmode="tel" autocomplete="off" placeholder="+353..." required />
+            Phone number
+            <input id="phone" type="tel" autocomplete="off" placeholder="+353..." required />
           </label>
 
           <label class="span2">
-            Marka / model
-            <input id="car" type="text" autocomplete="off" placeholder="np. BMW 216d" required />
+            Make / Model
+            <input id="car" type="text" autocomplete="off" placeholder="BMW 216d / Hyundai ix35..." required />
           </label>
 
           <label class="span2">
-            Numer rejestracyjny (IE)
-            <input id="reg" type="text" autocomplete="off" placeholder="np. 241-D-12345 lub 12-KK-1234" required />
-            <small class="muted">Akceptuje litery i cyfry, myślniki/spacje opcjonalnie.</small>
+            Registration (Ireland)
+            <input id="reg" type="text" autocomplete="off" placeholder="231-D-12345" required />
+            <small class="muted">Examples: 231-D-12345, 12-KE-3456, 06-C-123</small>
           </label>
         </div>
 
         <div class="actions">
-          <button type="submit">Zapisz</button>
-          <button type="button" class="secondary" id="clearForm">Wyczyść</button>
+          <button type="submit">Save client</button>
+          <button type="button" class="secondary" id="clearForm">Clear</button>
         </div>
       </form>
     </section>
 
+    <!-- ARCHIVE -->
     <section class="card">
       <div class="row">
-        <h2>Klienci</h2>
+        <h2>Client archive</h2>
         <div class="actions">
           <button type="button" class="secondary" id="exportCsv">Export CSV</button>
           <button type="button" class="secondary" id="exportJson">Export JSON</button>
-          <button type="button" id="printAll">PDF / Drukuj (lista)</button>
-          <button type="button" class="danger" id="wipeAll">Usuń wszystko</button>
+          <button type="button" id="printBtn">Print / PDF</button>
+          <button type="button" class="danger" id="wipeAll">Delete all</button>
         </div>
       </div>
 
       <div class="filters">
-        <input id="search" type="search" placeholder="Szukaj: nazwisko, tel, auto, rejestracja..." />
-        <div class="tabs">
-          <button type="button" class="tab active" data-view="active">Aktywne</button>
-          <button type="button" class="tab" data-view="archived">Archiwum</button>
-        </div>
+        <input id="search" type="search" placeholder="Search name / phone / car / reg..." />
       </div>
 
       <div class="tableWrap">
-        <table>
+        <table id="table">
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Klient</th>
-              <th>Telefon</th>
-              <th>Auto</th>
-              <th>Rejestracja</th>
-              <th>Akcje</th>
+              <th>Date</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Make/Model</th>
+              <th>Reg</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
 
-      <p class="hint">PDF: kliknij „PDF/Drukuj” → wybierz „Save as PDF”. Pojedynczy klient ma własny przycisk PDF.</p>
+      <p class="hint">PDF: click <b>Print / PDF</b> → choose <b>Save as PDF</b>.</p>
     </section>
-
-    <!-- Ukryty szablon do drukowania 1 klienta -->
-    <section id="printCard" class="printOnly"></section>
   </main>
 
   <script src="app.js"></script>
@@ -104,7 +99,7 @@
           await navigator.serviceWorker.register("./sw.js");
           document.getElementById("status").textContent = "Installed (PWA)";
         } catch (e) {
-          document.getElementById("status").textContent = "SW failed";
+          document.getElementById("status").textContent = "Offline cache failed";
         }
       });
     }
