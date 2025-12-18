@@ -347,4 +347,26 @@ a.tel:hover{border-bottom-color:rgba(45,212,191,.6)}
 /* żeby sticky header było nad sticky kolumną */
 .tbl thead th.colDate{
   z-index: 6;
+/* ===== FORCE horizontal swipe in Client archive (iPhone fix) ===== */
+
+/* NIE BLOKUJ scrolla globalnie (iOS potrafi wariować) */
+html, body{
+  overflow-x: visible !important;
+}
+
+/* kontener tabeli ma być przewijany w bok */
+.tableWrap{
+  width: 100% !important;
+  overflow-x: scroll !important;         /* wymusza scroll */
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+/* tabela MUSI być szersza niż ekran */
+.tableWrap .tbl{
+  width: max-content !important;         /* tabela rośnie do zawartości */
+  min-width: 1100px !important;          /* przesuwanie na bank */
+  border-collapse: separate;
+  border-spacing: 0;
 }
