@@ -1,6 +1,4 @@
-<link rel="stylesheet" href="style.css?v=FINAL" />
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -10,28 +8,29 @@
   <title>Client Archive</title>
 
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css" />
+  <!-- cache buster, żeby na iPhonie od razu zobaczyć zmiany -->
+  <link rel="stylesheet" href="style.css?v=logoTop1" />
 </head>
 <body>
   <header class="top">
-    <div class="brand">
+    <!-- LOGO on top + title under -->
+    <div class="brand vertical">
       <!-- LOGO: put Logo.PNG in repo root -->
-      <img src="Logo.PNG" alt="Munster Crash Repairs" class="logo">
+      <img src="Logo.PNG" alt="Munster Crash Repairs" class="logo bigLogo">
 
-      <div>
-        <h1>Client Archive</h1>
-        <div class="sub">
-          <span id="statusDot" class="dot"></span>
-          <span id="statusText">Ready</span>
-          <span class="sep">•</span>
-          <span>Offline</span>
-          <span class="sep">•</span>
-          <span>Click to call</span>
-          <span class="sep">•</span>
-          <span>Price</span>
-          <span class="sep">•</span>
-          <span>PDF</span>
-        </div>
+      <h1>Client Archive</h1>
+
+      <div class="sub">
+        <span id="statusDot" class="dot"></span>
+        <span id="statusText">Ready</span>
+        <span class="sep">•</span>
+        <span>Offline</span>
+        <span class="sep">•</span>
+        <span>Click to call</span>
+        <span class="sep">•</span>
+        <span>Price</span>
+        <span class="sep">•</span>
+        <span>PDF</span>
       </div>
     </div>
 
