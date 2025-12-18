@@ -15,27 +15,15 @@ const carEl = document.getElementById("car");
 const regEl = document.getElementById("reg");
 
 function loadAll() {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+  catch { return []; }
 }
-
 function saveAll(items) {
   localStorage.setItem(KEY, JSON.stringify(items));
 }
+function nowISO() { return new Date().toISOString(); }
+function prettyDate(iso) { return new Date(iso).toLocaleString(); }
 
-function nowISO() {
-  return new Date().toISOString();
-}
-
-function prettyDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleString();
-}
-
-// Simple Ireland reg validation (flexible)
 function validIrishReg(value) {
   const v = value.trim().toUpperCase();
   // Examples: 231-D-12345, 12-KE-3456, 06-C-123
@@ -43,34 +31,45 @@ function validIrishReg(value) {
   return re.test(v);
 }
 
-function normalize(str) {
-  return (str || "").toString().trim().toLowerCase();
-}
-
+function normalize(str) { return (str || "").toString().trim().toLowerCase(); }
 function matches(item, q) {
   if (!q) return true;
-  const hay = [
-    item.name, item.phone, item.car, item.reg, item.date
-  ].map(normalize).join(" ");
+  const hay = [item.name, item.phone, item.car, item.reg, item.date]
+    .map(normalize).join(" ");
   return hay.includes(q);
+}
+
+function escapeHtml(s) {
+  return (s ?? "").toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
 function render() {
   const items = loadAll();
   const q = normalize(searchInput.value);
-
   const filtered = items.filter(it => matches(it, q));
 
   tbody.innerHTML = "";
+
+  if (filtered.length === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="6"><small>No results</small></td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
   for (const it of filtered) {
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
       <td><small>${prettyDate(it.date)}</small></td>
-      <td>${escapeHtml(it.name)}</td>
+      <td><b>${escapeHtml(it.name)}</b></td>
       <td>${escapeHtml(it.phone)}</td>
       <td>${escapeHtml(it.car)}</td>
-      <td>${escapeHtml(it.reg)}</td>
+      <td><b>${escapeHtml(it.reg)}</b></td>
       <td style="white-space:nowrap">
         <button class="iconBtn" data-del="${it.id}">Delete</button>
       </td>
@@ -78,7 +77,6 @@ function render() {
     tbody.appendChild(tr);
   }
 
-  // bind delete buttons
   tbody.querySelectorAll("[data-del]").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-del");
@@ -89,21 +87,11 @@ function render() {
   });
 }
 
-function escapeHtml(s) {
-  return (s ?? "")
-    .toString()
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const item = {
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
     date: nowISO(),
     name: nameEl.value.trim(),
     phone: phoneEl.value.trim(),
@@ -112,7 +100,7 @@ form.addEventListener("submit", (e) => {
   };
 
   if (!validIrishReg(item.reg)) {
-    alert("Registration format looks wrong. Example: 231-D-12345");
+    alert("Registration format looks wrong.\nExample: 231-D-12345");
     regEl.focus();
     return;
   }
@@ -138,10 +126,7 @@ wipeAllBtn.addEventListener("click", () => {
 });
 
 searchInput.addEventListener("input", render);
-
-printBtn.addEventListener("click", () => {
-  window.print();
-});
+printBtn.addEventListener("click", () => window.print());
 
 function download(filename, text, mime) {
   const blob = new Blob([text], { type: mime });
@@ -155,30 +140,22 @@ function download(filename, text, mime) {
   URL.revokeObjectURL(url);
 }
 
-exportJsonBtn.addEventListener("click", () => {
-  const items = loadAll();
-  download("clients.json", JSON.stringify(items, null, 2), "application/json");
-});
-
-exportCsvBtn.addEventListener("click", () => {
-  const items = loadAll();
-  const header = ["date","name","phone","car","reg"];
-  const rows = items.map(it => [
-    it.date,
-    it.name,
-    it.phone,
-    it.car,
-    it.reg
-  ].map(csvSafe).join(","));
-  const csv = header.join(",") + "\n" + rows.join("\n");
-  download("clients.csv", csv, "text/csv");
-});
-
 function csvSafe(v) {
   const s = (v ?? "").toString();
   if (/[",\n]/.test(s)) return `"${s.replaceAll('"','""')}"`;
   return s;
 }
 
-// first render
+exportJsonBtn.addEventListener("click", () => {
+  download("clients.json", JSON.stringify(loadAll(), null, 2), "application/json");
+});
+
+exportCsvBtn.addEventListener("click", () => {
+  const items = loadAll();
+  const header = ["date","name","phone","car","reg"];
+  const rows = items.map(it => [it.date,it.name,it.phone,it.car,it.reg].map(csvSafe).join(","));
+  const csv = header.join(",") + "\n" + rows.join("\n");
+  download("clients.csv", csv, "text/csv");
+});
+
 render();
