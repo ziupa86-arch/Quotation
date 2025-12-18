@@ -9,20 +9,16 @@
 
   <link rel="manifest" href="manifest.webmanifest">
   <!-- cache buster -->
-  <link rel="stylesheet" href="style.css?v=archiveScro999" />
+  <link rel="stylesheet" href="style.css?v=full1" />
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="top">
     <div class="brand vertical">
-      <!-- LOGO -->
-      <img src="Logo.PNG" alt="Munster Crash Repairs" class="logo bigLogo">
+      <img src="Logo.PNG" alt="Munster Crash Repairs" class="logo bigLogo" />
 
-      <!-- TITLE -->
       <h1>Client Archive</h1>
 
-      <!-- STATUS -->
       <div class="sub">
         <span id="statusDot" class="dot"></span>
         <span id="statusText">Ready</span>
@@ -37,76 +33,74 @@
       </div>
     </div>
 
-    <!-- ACTIONS -->
     <div class="topActions">
       <button id="printAllBtn" class="ghost">Print / PDF (All)</button>
       <button id="exportJsonBtn" class="ghost">Export JSON</button>
       <button id="exportCsvBtn" class="ghost">Export CSV</button>
       <label class="fileBtn ghost">
         Import
-        <input id="importFile" type="file" accept=".json,.csv" hidden>
+        <input id="importFile" type="file" accept=".json,.csv" hidden />
       </label>
     </div>
   </header>
 
-  <!-- MAIN -->
   <main class="wrap">
-
-    <!-- ADD CLIENT -->
     <section class="card">
-      <h2>Add client</h2>
+      <h2 id="formTitle">Add client</h2>
 
       <div class="field">
         <label for="name">Client name</label>
-        <input id="name" type="text" placeholder="e.g. John Murphy" autocomplete="name">
+        <input id="name" type="text" placeholder="e.g. John Murphy" autocomplete="name" />
       </div>
 
       <div class="field">
         <label for="phone">Phone number</label>
-        <input id="phone" type="tel" placeholder="+353..." inputmode="tel" autocomplete="tel">
+        <input id="phone" type="tel" placeholder="+353..." inputmode="tel" autocomplete="tel" />
       </div>
 
       <div class="field">
         <label for="price">Price (€)</label>
-        <input id="price" type="number" step="0.01" min="0" placeholder="0.00">
+        <input id="price" type="number" step="0.01" min="0" placeholder="0.00" inputmode="decimal" />
       </div>
 
       <div class="field">
         <label for="car">Make / Model</label>
-        <input id="car" type="text" placeholder="e.g. BMW 216d">
+        <input id="car" type="text" placeholder="e.g. BMW 216d" />
       </div>
 
       <div class="field">
         <label for="reg">Registration (Ireland)</label>
-        <input id="reg" type="text" placeholder="231-D-12345">
+        <input id="reg" type="text" placeholder="231-D-12345" autocomplete="off" />
       </div>
 
       <div class="buttons">
         <button id="saveBtn" class="primary">Save client</button>
         <button id="clearBtn" type="button">Clear</button>
+        <button id="cancelEditBtn" type="button" class="ghost hidden">Cancel edit</button>
       </div>
+
+      <div id="editHint" class="hint hidden">Editing mode: press <b>Update</b> to save changes.</div>
     </section>
 
-    <!-- ARCHIVE -->
     <section class="card">
       <div class="archiveHeader">
         <h2>Client archive</h2>
-        <input id="search" class="search" type="search"
-               placeholder="Search name / phone / car / reg">
+        <div class="right">
+          <input id="search" class="search" type="search" placeholder="Search name / phone / car / reg" />
+        </div>
       </div>
 
-      <!-- SCROLLABLE TABLE -->
       <div class="tableWrap">
         <table class="tbl">
           <thead>
             <tr>
               <th class="colDate">Date</th>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Price</th>
-              <th>Car</th>
-              <th>Reg</th>
-              <th>Actions</th>
+              <th class="colName">Name</th>
+              <th class="colPhone">Phone</th>
+              <th class="colPrice">Price</th>
+              <th class="colCar">Car</th>
+              <th class="colReg">Reg</th>
+              <th class="colActions">Actions</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
@@ -114,13 +108,11 @@
       </div>
 
       <div class="hint">
-        Swipe left/right on table • Print → Save as PDF
+        Swipe table left/right • Actions always visible • PDF: Print → Save as PDF
       </div>
     </section>
-
   </main>
 
-  <!-- PRINT MODAL -->
   <div id="printModal" class="modal" aria-hidden="true">
     <div class="modalBox">
       <div class="modalTop">
@@ -139,15 +131,14 @@
     </div>
   </div>
 
-  <!-- SCRIPTS -->
   <script src="app.js"></script>
+
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js");
+      window.addEventListener("load", async () => {
+        try { await navigator.serviceWorker.register("./sw.js"); } catch(e) {}
       });
     }
   </script>
-
 </body>
 </html>
