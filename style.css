@@ -310,4 +310,41 @@ a.tel:hover{border-bottom-color:rgba(45,212,191,.6)}
     font-size:12px;
   }
   #printOnly .k{color:#333}
+  }
+  /* ===== Client archive: swipe left/right + sticky header + sticky Date ===== */
+.tableWrap{
+  overflow-x: auto;
+  overflow-y: auto;                 /* pozwala też scroll w dół w tabeli jeśli będzie wysoka */
+  -webkit-overflow-scrolling: touch;
+  max-height: 60vh;                 /* opcjonalnie: żeby tabela nie była mega długa */
+}
+
+/* tabela musi być szersza niż ekran, żeby dało się przesuwać */
+.tbl{
+  width: 100%;
+  min-width: 980px;                 /* możesz dać 900/1100 jak chcesz */
+  border-collapse: separate;        /* potrzebne do sticky */
+  border-spacing: 0;
+}
+
+/* sticky header */
+.tbl thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #111;                 /* nie przezroczyste */
+}
+
+/* sticky first column (Date) */
+.tbl th.colDate,
+.tbl td:first-child{
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: #0f1620;              /* kolor karty */
+}
+
+/* żeby sticky header było nad sticky kolumną */
+.tbl thead th.colDate{
+  z-index: 6;
 }
