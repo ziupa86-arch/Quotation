@@ -1,144 +1,72 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b0f14" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0b0f14" />
 
-  <title>Client Archive</title>
+<title>Client Archive</title>
 
-  <link rel="manifest" href="manifest.webmanifest">
-  <!-- cache buster -->
-  <link rel="stylesheet" href="style.css?v=full2" />
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css?v=scrollfix1">
 </head>
+
 <body>
 
-  <header class="top">
-    <div class="brand vertical">
-      <img src="Logo.PNG" alt="Munster Crash Repairs" class="logo bigLogo" />
+<header class="top">
+  <img src="Logo.PNG" class="logo" alt="Logo">
 
-      <h1>Client Archive</h1>
+  <h1>Client Archive</h1>
 
-      <div class="sub">
-        <span id="statusDot" class="dot"></span>
-        <span id="statusText">Ready</span>
-        <span class="sep">•</span>
-        <span>Offline</span>
-        <span class="sep">•</span>
-        <span>Click to call</span>
-        <span class="sep">•</span>
-        <span>Price</span>
-        <span class="sep">•</span>
-        <span>PDF</span>
-      </div>
-    </div>
-
-    <div class="topActions">
-      <button id="printAllBtn" class="ghost">Print / PDF (All)</button>
-      <button id="exportJsonBtn" class="ghost">Export JSON</button>
-      <button id="exportCsvBtn" class="ghost">Export CSV</button>
-      <label class="fileBtn ghost">
-        Import
-        <input id="importFile" type="file" accept=".json,.csv" hidden />
-      </label>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <section class="card">
-      <h2 id="formTitle">Add client</h2>
-
-      <div class="field">
-        <label for="name">Client name</label>
-        <input id="name" type="text" placeholder="e.g. John Murphy" autocomplete="name" />
-      </div>
-
-      <div class="field">
-        <label for="phone">Phone number</label>
-        <input id="phone" type="tel" placeholder="+353..." inputmode="tel" autocomplete="tel" />
-      </div>
-
-      <div class="field">
-        <label for="price">Price (€)</label>
-        <input id="price" type="number" step="0.01" min="0" placeholder="0.00" inputmode="decimal" />
-      </div>
-
-      <div class="field">
-        <label for="car">Make / Model</label>
-        <input id="car" type="text" placeholder="e.g. BMW 216d" />
-      </div>
-
-      <div class="field">
-        <label for="reg">Registration (Ireland)</label>
-        <input id="reg" type="text" placeholder="231-D-12345" autocomplete="off" />
-      </div>
-
-      <div class="buttons">
-        <button id="saveBtn" class="primary">Save client</button>
-        <button id="clearBtn" type="button">Clear</button>
-        <button id="cancelEditBtn" type="button" class="ghost hidden">Cancel edit</button>
-      </div>
-
-      <div id="editHint" class="hint hidden">Editing mode: press <b>Update</b> to save changes.</div>
-    </section>
-
-    <section class="card">
-      <div class="archiveHeader">
-        <h2>Client archive</h2>
-        <div class="right">
-          <input id="search" class="search" type="search" placeholder="Search name / phone / car / reg" />
-        </div>
-      </div>
-
-      <div class="tableWrap">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th class="colDate">Date</th>
-              <th class="colName">Name</th>
-              <th class="colPhone">Phone</th>
-              <th class="colPrice">Price</th>
-              <th class="colCar">Car</th>
-              <th class="colReg">Reg</th>
-              <th class="colActions">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-
-      <div class="hint">
-        Swipe table left/right • Actions always visible • PDF: Print → Save as PDF
-      </div>
-    </section>
-  </main>
-
-  <div id="printModal" class="modal" aria-hidden="true">
-    <div class="modalBox">
-      <div class="modalTop">
-        <div>
-          <div class="modalTitle">Client card</div>
-          <div class="modalSub">Print / Save as PDF</div>
-        </div>
-        <button id="closeModalBtn" class="ghost">Close</button>
-      </div>
-
-      <div id="printCard" class="printCard"></div>
-
-      <div class="modalActions">
-        <button id="printOneBtn" class="primary">Print / PDF</button>
-      </div>
-    </div>
+  <div class="sub">
+    <span class="dot"></span> Ready • Offline • Click to call • Price • PDF
   </div>
+</header>
 
-  <script src="app.js"></script>
+<main class="wrap">
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
-        try { await navigator.serviceWorker.register("./sw.js"); } catch(e) {}
-      });
-    }
-  </script>
+<section class="card">
+<h2>Add client</h2>
+
+<input id="name" placeholder="Client name">
+<input id="phone" placeholder="Phone number">
+<input id="price" placeholder="Price €" type="number">
+<input id="car" placeholder="Make / Model">
+<input id="reg" placeholder="Registration">
+
+<div class="buttons">
+  <button id="saveBtn">Save</button>
+  <button id="clearBtn">Clear</button>
+</div>
+</section>
+
+<section class="card">
+<h2>Client archive</h2>
+
+<input id="search" class="search" placeholder="Search name / phone / car / reg">
+
+<div class="tableWrap">
+<table class="tbl">
+<thead>
+<tr>
+  <th>Date</th>
+  <th>Name</th>
+  <th>Phone</th>
+  <th>Price</th>
+  <th>Car</th>
+  <th>Reg</th>
+  <th>Actions</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<p class="hint">⬅️ Swipe table left / right</p>
+</section>
+
+</main>
+
+<script src="app.js?v=scrollfix1"></script>
 </body>
 </html>
