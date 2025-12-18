@@ -1,4 +1,4 @@
-const CACHE = "client-archive-cache-v2";
+const CACHE = "client-archive-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
