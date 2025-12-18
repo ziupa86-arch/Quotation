@@ -3,20 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+
   <title>Client Archive</title>
 
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#111111" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="top">
-    <div>
-      <h1>Client Archive</h1>
-      <p class="sub">Offline • Click to call • Price • PDF</p>
+    <div class="brand">
+      <!-- LOGO: put logo.png in repo root -->
+      <img src="logo.png" alt="Munster Crash Repairs" class="logo">
+
+      <div>
+        <h1>Client Archive</h1>
+        <div class="sub">
+          <span id="statusDot" class="dot"></span>
+          <span id="statusText">Ready</span>
+          <span class="sep">•</span>
+          <span>Offline</span>
+          <span class="sep">•</span>
+          <span>Click to call</span>
+          <span class="sep">•</span>
+          <span>Price</span>
+          <span class="sep">•</span>
+          <span>PDF</span>
+        </div>
+      </div>
     </div>
-    <div class="pill">Ready</div>
+
+    <div class="topActions">
+      <button id="printAllBtn" class="ghost">Print / PDF (All)</button>
+      <button id="exportJsonBtn" class="ghost">Export JSON</button>
+      <button id="exportCsvBtn" class="ghost">Export CSV</button>
+      <label class="fileBtn ghost">
+        Import
+        <input id="importFile" type="file" accept=".json,.csv" hidden>
+      </label>
+    </div>
   </header>
 
   <main class="wrap">
@@ -24,73 +49,99 @@
     <section class="card">
       <h2>Add client</h2>
 
-      <form id="form">
-        <div class="grid">
-          <label>
-            Client name
-            <input id="name" type="text" required />
-          </label>
+      <div class="field">
+        <label for="name">Client name</label>
+        <input id="name" type="text" placeholder="e.g. John Murphy" autocomplete="name" />
+      </div>
 
-          <label>
-            Phone number
-            <input id="phone" type="tel" placeholder="+353..." required />
-          </label>
+      <div class="field">
+        <label for="phone">Phone number</label>
+        <input id="phone" type="tel" placeholder="+353..." inputmode="tel" autocomplete="tel" />
+      </div>
 
-          <label>
-            Price (€)
-            <input id="price" type="number" step="0.01" placeholder="0.00" />
-          </label>
+      <div class="field">
+        <label for="price">Price (€)</label>
+        <input id="price" type="number" step="0.01" min="0" placeholder="0.00" inputmode="decimal" />
+      </div>
 
-          <label class="span2">
-            Make / Model
-            <input id="car" type="text" placeholder="BMW 216d" required />
-          </label>
+      <div class="field">
+        <label for="car">Make / Model</label>
+        <input id="car" type="text" placeholder="e.g. BMW 216d" />
+      </div>
 
-          <label class="span2">
-            Registration (Ireland)
-            <input id="reg" type="text" placeholder="231-D-12345" required />
-          </label>
-        </div>
+      <div class="field">
+        <label for="reg">Registration (Ireland)</label>
+        <input id="reg" type="text" placeholder="231-D-12345" autocomplete="off" />
+      </div>
 
-        <div class="actions">
-          <button type="submit">Save client</button>
-          <button type="button" class="secondary" id="clearForm">Clear</button>
-        </div>
-      </form>
+      <div class="buttons">
+        <button id="saveBtn" class="primary">Save client</button>
+        <button id="clearBtn" type="button">Clear</button>
+      </div>
     </section>
 
     <!-- ARCHIVE -->
     <section class="card">
-      <div class="row">
+      <div class="archiveHeader">
         <h2>Client archive</h2>
-        <div class="actions">
-          <button id="exportCsv" class="secondary">Export CSV</button>
-          <button id="printBtn">Print / PDF</button>
-          <button id="wipeAll" class="danger">Delete all</button>
+        <div class="right">
+          <input id="search" class="search" type="search" placeholder="Search name / phone / car / reg" />
         </div>
       </div>
 
-      <input id="search" type="search" placeholder="Search name / phone / car / reg..." />
-
       <div class="tableWrap">
-        <table>
+        <table class="tbl">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Price</th>
-              <th>Car</th>
-              <th>Reg</th>
-              <th></th>
+              <th class="colDate">Date</th>
+              <th class="colName">Name</th>
+              <th class="colPhone">Phone</th>
+              <th class="colPrice">Price</th>
+              <th class="colCar">Car</th>
+              <th class="colReg">Reg</th>
+              <th class="colActions"></th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
+
+      <div class="hint">
+        PDF: click <b>Print / PDF</b> → choose <b>Save as PDF</b>
+      </div>
     </section>
   </main>
 
+  <!-- PRINT MODAL (single client) -->
+  <div id="printModal" class="modal" aria-hidden="true">
+    <div class="modalBox">
+      <div class="modalTop">
+        <div>
+          <div class="modalTitle">Client card</div>
+          <div class="modalSub">Print / Save as PDF</div>
+        </div>
+        <button id="closeModalBtn" class="ghost">Close</button>
+      </div>
+
+      <div id="printCard" class="printCard"></div>
+
+      <div class="modalActions">
+        <button id="printOneBtn" class="primary">Print / PDF</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
+
+  <script>
+    // Register service worker (PWA offline)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try {
+          await navigator.serviceWorker.register("./sw.js");
+        } catch (e) {}
+      });
+    }
+  </script>
 </body>
 </html>
